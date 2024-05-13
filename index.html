@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Window</title>
+<style>
+  @font-face {
+    font-family: 'MaplestoryOTFBold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFBold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  body {
+    font-family: 'MaplestoryOTFBold', sans-serif;
+    background-color: transparent; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .chat-container {
+    width: 500px;
+    height: 800px;
+    border: 0px solid #ccc;
+    background-color: transparent;
+    border-radius: 16px;
+    overflow-y: hidden; 
+    padding: 10px;
+    margin-bottom: 20px; 
+  }
+
+  .chat-message {
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+    font-size: 33px; 
+  }
+
+  .chat-message.fadeOut {
+    animation: fadeOut 0.5s ease forwards;
+  }
+
+  .pinned-message {
+    background-color: #ffd700;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  .message {
+    display: inline;
+  }
+
+  .input-container {
+    display: flex;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: transparent;
+  }
+
+  #message-input {
+    border: none;
+    padding: 10px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    flex: 1;
+    font-size: 20px; 
+    background-color: transparent;
+  }
+
+  #send-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    cursor: pointer;
+    background-color: transparent;
+  }
+</style>
+</head>
+<body>
+  <div class="chat-container" id="chat-container">
+  </div>
+  <div class="input-container">
+    <input type="text" id="message-input" placeholder="" onkeydown="if (event.key === 'Enter') sendMessage()">
+    <button id="send-button" onclick="sendMessage()"></button>
+  </div>
+
+  <script>
+    var nicknames = ['동훈', '택기', '태준', '산준', 'James', 'Michael', 'John', 'Robert', 'William', 'Elon', 'Olivia', 'Ava', 'Sophia', 'Isabella', 'Robbas', 'Pierre', 'Lucas', 'Gabriel', 'Hugo', 'Louise', 'Chloe', 'Ines', 'Alice', 'Olive', 'George', 'Harry', 'Noah', 'Jack', 'Aslan', 'Emily', 'Mia', '준수', '성준', '영재', '미래', '지훈', '지연', '은지', '서연', '지구', '수빈', '해솔', '미리내', 'Galavy'];
+    var prevNicknames = [];
+    var autoMessages = ['안녕', '하이', 'Thanks for Streaming :D', 'Cheer UP!', 'Hello', 'I am studying too', 'Everyone Fighting!', 'I am love with this mood', 'This chat?', 'Powered by llama3', 'oh i want for christmas is for end of exam~', 'HARD study! Go Go!', 'with coffe', 'KOREAN', 'Future of Study with me Streaming', 'AI helped me for this chat text, not script', 'study for Exam', 'YouTube, Twitch, Chzzk Lets Go', 'study GO', 'write with PEN', 'study with iPad', 'no with samsung tab', 'draw Future', 'iam studying 4 UNIV', 'do you know SAT?', 'Iam learning for CSAT', 'Math is HARD', 'ShortForm is Dangerus for study', 'study with me ohyea!', 'i luv SPEN', 'sometimes go to run is gud!', 'we live for future', 'we love our life', 'OneStep more!!', 'study. study. study!', '마치 실제같아요!', '공부, 공부, 공부'];
+    var prevAutoMessages = [];
+    var autoMessageInterval;
+    var colors = ['#BFF6C3', '#5c16c5', '#ae1392', '#ff38db', '#ffa3ee', '#eb0400', '#ff8280', '#ffd37a', '#00f593', '#00a3a3', '#00f0f0', '#1f69ff', '#1345aa', '#04d087', '#f7e65f', '#fac000', '#ff8282', '#fc3c1c', '#4285f4', '#ea4335', '#fbbc05', '#34a853', '#f90', '#1a98ff'];
+
+    function getRandomNicknameColor() {
+      var remainingColors = colors.filter(function(color) {
+        return !prevNicknames.includes(color);
+      });
+
+      if (remainingColors.length === 0) {
+        prevNicknames = [];
+        remainingColors = colors.slice();
+      }
+
+      var randomIndex = Math.floor(Math.random() * remainingColors.length);
+      var selectedColor = remainingColors[randomIndex];
+      prevNicknames.push(selectedColor);
+      if (prevNicknames.length > 4) {
+        prevNicknames.shift();
+      }
+      return selectedColor;
+    }
+
+    function getRandomNickname() {
+      var color = getRandomNicknameColor();
+      var remainingNicknames = nicknames.filter(function(nickname) {
+        return !prevNicknames.includes(nickname);
+      });
+
+      if (remainingNicknames.length === 0) {
+        prevNicknames = [];
+        remainingNicknames = nicknames.slice();
+      }
+
+      var randomIndex = Math.floor(Math.random() * remainingNicknames.length);
+      var selectedNickname = remainingNicknames[randomIndex];
+      prevNicknames.push(selectedNickname);
+      if (prevNicknames.length > 8) {
+        prevNicknames.shift();
+      }
+      return '<span style="color:' + color + '">' + selectedNickname + '</span>';
+    }
+
+    function getRandomMessage() {
+      var remainingMessages = autoMessages.filter(function(message) {
+        return !prevAutoMessages.includes(message);
+      });
+
+      if (remainingMessages.length === 0) {
+        prevAutoMessages = [];
+        remainingMessages = autoMessages.slice();
+      }
+
+      var randomIndex = Math.floor(Math.random() * remainingMessages.length);
+      var selectedMessage = remainingMessages[randomIndex];
+      prevAutoMessages.push(selectedMessage);
+      if (prevAutoMessages.length > 2) {
+        prevAutoMessages.shift();
+      }
+      return selectedMessage;
+    }
+
+    function sendMessage(message) {
+      var chatContainer = document.getElementById("chat-container");
+      var newMessage = document.createElement("div");
+      newMessage.classList.add("chat-message");
+      var sender = getRandomNickname();
+      newMessage.innerHTML = '<span class="sender">' + sender + ':</span> <span class="message">' + message + '</span>';
+      chatContainer.appendChild(newMessage);
+      chatContainer.scrollTop = chatContainer.scrollHeight; 
+
+      setTimeout(function() {
+        newMessage.classList.add("fadeOut");
+        setTimeout(function() {
+          chatContainer.removeChild(newMessage);
+        }, 500); 
+      }, Math.floor(Math.random() * 1545) + 9200); 
+    }
+
+    // Auto Message
+    autoMessageInterval = setInterval(function() {
+      if (document.querySelectorAll('.chat-message').length < 5) {
+        var message = getRandomMessage();
+        sendMessage(message);
+      }
+    }, Math.floor(Math.random() * 1301) + 1173); 
+
+    function addPinnedMessage() {
+      var chatContainer = document.getElementById("chat-container");
+      var pinnedMessage = document.createElement("div");
+      pinnedMessage.classList.add("pinned-message");
+      var inputMessage = document.getElementById("message-input").value;
+      pinnedMessage.innerHTML = inputMessage;
+      chatContainer.insertBefore(pinnedMessage, chatContainer.firstChild);
+      document.getElementById("message-input").value = ""; 
+    }
+  </script>
+</body>
+</html>
